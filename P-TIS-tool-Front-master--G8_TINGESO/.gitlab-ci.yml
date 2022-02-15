@@ -1,0 +1,84 @@
+stages:
+  - build
+  - unit test
+  - static code analisys
+  - deploy
+
+image: node:10
+
+build:
+  stage: build
+  script:
+    - npm install --progress=false
+    - npm run build
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - dist
+  before_script:
+    - echo "VUE_APP_API_URL='http://199.223.233.227:8080'" > .env
+
+test:
+  stage: unit test
+  cache:
+    key: ptis-tool-front
+    paths:
+      - coverage
+  script:
+    - npm install --progress:false
+    - npm run test:unit
+
+# e2e:
+#  image: node:10
+#  stage: integrations test
+#  services:
+#    - selenium/standalone-chrome
+#    - selenium/standalone-firefox
+#  script:
+    # - npm install --progres:false
+    # - npm run test:e2e --env chrome,firefox --headless --disable-gpu
+#    - yarn install
+#    - yarn test:e2e
+#  before_script:
+#    - apt-get update
+    # Install Chrome
+#    - apt-get install -yq libnss3 unzip openjdk-8-jre-headless xvfb libxi6 libgconf-2-4
+#    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+#    - curl -sS -o - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+#    - apt install -y ./google-chrome-stable_current_amd64.deb
+    # Install Firefox
+#    - apt-get install -y firefox-esr
+##
+
+sonarqube:
+  extends: test
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  stage: static code analisys
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" #Define la ubicación del caché de análisis de Sonarqube
+    GIT_DEPTH: "0" #Tell git to fetch all branches of the project, required by the analisys task
+  cache:
+    key: ptis-tool-front
+    paths:
+      - .sonar/cache
+  script:
+    - sonar-scanner -Dsonar.qualitygate.wait=true
+  allow_failure: true
+  only:
+    - master
+    - main
+
+to_docker:
+  image: docker:latest
+  extends: build
+  stage: deploy
+  services:
+    - docker:dind
+  before_script:
+    - echo $CI_BUILD_TOKEN | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - echo "deploying to Docker start..."
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker push "$CI_REGISTRY_IMAGE"

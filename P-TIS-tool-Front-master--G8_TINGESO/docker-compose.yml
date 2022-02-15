@@ -1,0 +1,13 @@
+version: '2.2'
+services:
+  tingeso:
+    build: .
+    container_name: TINGESOFRONT
+    restart: always
+    environment:
+      - VIRTUAL_HOST=shili.diinf.usach.cl
+      - VIRTUAL_PORT=81
+    ports:
+      - 81:81
+    networks:
+      - app-network1
