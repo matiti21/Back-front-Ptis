@@ -1,6 +1,6 @@
 # Backend
 Clonar proyecto
-# Instalación en desarrollo
+## Instalación en desarrollo
 ### RVM
 RVM es una herramienta que permite tener multiples instalaciones de Ruby en el sistema. Para su instalación, se debe contar con cURL instalado:
 ```
@@ -105,6 +105,68 @@ Desplegar la aplicación en entorno de desarrollo:
 ```
 rails server
 ```
-# Backend
-# Instalacion en desarrollo
+# Frontend
+## Instalacion en desarrollo
+### Node.js
+Agregar repositorio de origen de la descarga:
+```
+sudo apt install curl
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+```
+Instalar:
+```
+sudo apt install -y nodejs
+```
+Verificar instalación de nodejs:
+```
+nodejs --version
+```
+Verificar instalación de npm:
+```
+npm --version
+```
+
+### Yarn
+```
+curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+sudo apt-get update && sudo apt-get install yarn
+```
+
+### Vue cli
+Instalación con npm:
+```
+npm install -g @vue/cli
+```
+Instalación con yarn:
+```
+yarn global add @vue/cli
+```
+
+### Clonar repositorio, instalar dependencias y desplegar
+ingresar al directorio del frontend:
+``
+cd P-TIS-tool-Front-master--G8_TINGESO 
+```
+Instalar las dependencias:
+```
+npm install
+# o
+yarn install
+```
+Copiar archivo .env.example a .env y editarlo
+```
+cp .env.example .env
+nano .env
+```
+Ingresar la dirección de la API de la aplicación:
+```
+VUE_APP_API_URL='tu-direccion-de-la-api'
+```
+Desplegar en entorno de desarrollo:
+```
+npm run serve
+# o
+yarn serve
+```
 # Back-front-Ptis
