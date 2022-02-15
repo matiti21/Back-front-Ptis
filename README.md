@@ -169,4 +169,151 @@ npm run serve
 o
 yarn serve
 ```
+
+# Despliegue con docker
+## Crear y modificar archivos necesarios
+### Crear .env en Front
+Acceder a:
+```
+cd P-TIS-tool-Front-master--G8_TINGESO
+```
+Luego :
+Generar archivo de variables de entorno para la aplicación copiando archivo .env.example a .env y editarlo:
+```
+cp .env.example .env
+nano .env
+```
+En el .env editar y colocar ip de la api
+### Editar Dockerfile de Backend
+Debe estar en la caprta raiz del proyecto y acceder a:
+```
+cd P-TIS-tool-Back-master--G8_TINGESO
+```
+Luego editar Cors origin con el ip de donde se recibiran las consultas:
+```
+22 RUN echo "DB_USERNAME='root'\nDB_PASSWORD='ptis2021'\nDB_HOST='database'\nCORS_ORIGINS='*'" > .env
+```
+## instalar dependencias del front
+debe estar en la carpeta raiz del proyecto y acceder a:
+```
+cd P-TIS-tool-Front-master--G8_TINGESO
+```
+Luego instalar lo siguiente:
+### Node.js
+Agregar repositorio de origen de la descarga:
+```
+sudo apt install curl
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+```
+Instalar:
+```
+sudo apt install -y nodejs
+```
+Verificar instalación de nodejs:
+```
+nodejs --version
+```
+Verificar instalación de npm:
+```
+npm --version
+```
+
+### Yarn
+```
+curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+sudo apt-get update && sudo apt-get install yarn
+```
+
+### Vue cli
+Instalación con npm:
+```
+npm install -g @vue/cli
+```
+Instalación con yarn:
+```
+yarn global add @vue/cli
+```
+Por ultimo realizar con yarn:
+```
+yarn install
+```
+```
+yarn build
+```
+## Configurar y realizar despliegue
+Debe estar en la carpeta raiz del proyecto, luego abrir el archivo docker-compose.yml
+### Caso 1
+Si puede abrir el puerto 8080. Debera copiar y pegar lo siguiente (Eliminando lo anterior):
+```
+version: '2.2'
+
+services:
+  database:
+    image: postgres:10.14
+    container_name: ptis-tool-db
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD='ptis2021'
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    networks:
+      - app-network
+  api:
+    build: ./P-TIS-tool-Back-master--G8_TINGESO
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 8080 -b '0.0.0.0'"
+    container_name: ptis-tool-api
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - RAILS_ENV=production
+      - DISABLE_SPRING=1
+      - BUNDLE_PATH=vendor/bundle
+    depends_on:
+      - database
+    networks:
+      - app-network
+  tingeso:
+    build: ./P-TIS-tool-Front-master--G8_TINGESO
+    container_name: TINGESOFRONT
+    restart: always
+    ports:
+      - 80:80
+    networks:
+      - app-network
+    depends_on:
+      - nginx-proxy
+volumes:
+  db-data:
+networks:
+  app-network:
+    driver: bridge
+```
+### Caso 2
+Si solo puede mantener el puerto 80 abierto (Como fue en el caso en el momento que se realizo esto), entonces debe solicitar al administrador de la red que les genere 2 subdominios o Url que apunte a su IP y luego poner esas en las siguientes lineas del archivo Docker-compose.yml
+
+```
+      29  VIRTUAL_HOST=api-minutas.diinf.usach.cl (URL 1)
+      ...
+      42  VIRTUAL_HOST=vminutas.diinf.usach.cl (URL 2)      
+      
+```
+## Instalacion y generacion de DB
+### Despliegue por docker-compose
+Debe estar en la carpeta raiz del proyecto y realizar:
+```
+docker-compose up -d
+```
+## Generacion DB
+```
+docker exec -it ptis-tool-api bundle exec rails db:create db:migrate db:seed RAILS_ENV=production        
+```
+Listo ya esta en desplegada la aplicación
+
+Nota: en caso de dudas contactar.
 # Back-front-Ptis
