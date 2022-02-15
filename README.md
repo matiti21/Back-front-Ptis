@@ -145,7 +145,7 @@ yarn global add @vue/cli
 
 ### Clonar repositorio, instalar dependencias y desplegar
 ingresar al directorio del frontend:
-``
+```
 cd P-TIS-tool-Front-master--G8_TINGESO 
 ```
 Instalar las dependencias:
@@ -166,7 +166,7 @@ VUE_APP_API_URL='tu-direccion-de-la-api'
 Desplegar en entorno de desarrollo:
 ```
 npm run serve
-# o
+o
 yarn serve
 ```
 # Back-front-Ptis
