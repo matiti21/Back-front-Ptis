@@ -295,12 +295,69 @@ networks:
     driver: bridge
 ```
 ### Caso 2
-Si solo puede mantener el puerto 80 abierto (Como fue en el caso en el momento que se realizo esto), entonces debe solicitar al administrador de la red que les genere 2 subdominios o Url que apunte a su IP y luego poner esas en las siguientes lineas del archivo Docker-compose.yml
+Si solo puede mantener el puerto 80 abierto (Como fue en el caso en el momento que se realizo esto), entonces debe solicitar al administrador de la red que les genere 2 subdominios o Url que apunte a su IP y luego copiar todo lo que viene a continuación en el Docker-compose.yml, cambiando las URL:
 
 ```
-      29  VIRTUAL_HOST=api-minutas.diinf.usach.cl (URL 1)
-      ...
-      42  VIRTUAL_HOST=vminutas.diinf.usach.cl (URL 2)      
+  version: '2.2'
+
+services:
+  database:
+    image: postgres:10.14
+    container_name: ptis-tool-db
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD='ptis2021'
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    networks:
+      - app-network
+  api:
+    build: ./P-TIS-tool-Back-master--G8_TINGESO
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 8080 -b '0.0.0.0'"
+    container_name: ptis-tool-api
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - RAILS_ENV=production
+      - DISABLE_SPRING=1
+      - BUNDLE_PATH=vendor/bundle
+      - VIRTUAL_HOST=api-minutas.diinf.usach.cl
+      - VIRTUAL_PORT=8080
+    depends_on:
+      - database
+    networks:
+      - app-network
+  tingeso:
+    build: ./P-TIS-tool-Front-master--G8_TINGESO
+    container_name: TINGESOFRONT
+    restart: always
+    ports:
+      - 81:81
+    environment:
+      - VIRTUAL_HOST=vminutas.diinf.usach.cl
+      - VIRTUAL_PORT=80
+    networks:
+      - app-network
+    depends_on:
+      - nginx-proxy
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - app-network
+volumes:
+  db-data:
+networks:
+  app-network:
+    driver: bridge  
       
 ```
 ## Instalacion y generacion de DB
