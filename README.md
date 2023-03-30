@@ -326,7 +326,7 @@ services:
       - RAILS_ENV=production
       - DISABLE_SPRING=1
       - BUNDLE_PATH=vendor/bundle
-      - VIRTUAL_HOST=api-minutas.diinf.usach.cl
+      - VIRTUAL_HOST=api-minutas.diinf.usach.cl URL 1
       - VIRTUAL_PORT=8080
     depends_on:
       - database
@@ -339,7 +339,7 @@ services:
     ports:
       - 81:81
     environment:
-      - VIRTUAL_HOST=vminutas.diinf.usach.cl
+      - VIRTUAL_HOST=vminutas.diinf.usach.cl URL 2
       - VIRTUAL_PORT=80
     networks:
       - app-network
